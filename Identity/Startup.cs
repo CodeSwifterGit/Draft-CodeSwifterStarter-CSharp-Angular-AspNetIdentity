@@ -83,6 +83,25 @@ namespace Identity
                 configureOptions.ClaimsIssuer = jwtOptions.Issuer;
                 configureOptions.TokenValidationParameters = tokenValidationParameters;
                 configureOptions.SaveToken = true;
+
+                configureOptions.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if (context.Request.Headers["Authorization"].Count > 0)
+                        {
+                            var authToken = context.Request.Headers["Authorization"][0];
+
+                            if (authToken.StartsWith("Bearer"))
+                            {
+                                context.Token = authToken.Split(' ')[1];
+                            }
+                        }
+
+                        context.Token = context.Token ?? context.Request.Cookies["auth-cookie"];
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             services.AddAuthorization(options =>

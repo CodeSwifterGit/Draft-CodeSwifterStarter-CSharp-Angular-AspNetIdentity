@@ -2,6 +2,7 @@
 using Identity.Helpers;
 using Identity.Models;
 using Identity.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -45,8 +46,14 @@ namespace Identity.Controllers
                 return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));
             }
 
-            var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, JwtOptions, new JsonSerializerSettings { Formatting = Formatting.Indented });
-            return new OkObjectResult(jwt);
+            var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, JwtOptions);
+
+            Response.Cookies.Append("auth-cookie", jwt.Token, new CookieOptions { 
+                HttpOnly = true,
+                Secure = true
+            });
+
+            return new OkObjectResult(JsonConvert.SerializeObject(jwt, new JsonSerializerSettings { Formatting = Formatting.Indented }));
         }
 
         private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)

@@ -2,6 +2,7 @@ using Identity.Auth;
 using Identity.Database;
 using Identity.Helpers;
 using Identity.Models;
+using Identity.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -41,6 +42,7 @@ namespace Identity
               b => b.MigrationsAssembly("Identity")));
 
             services.AddSingleton<IJwtFactory, JwtFactory>();
+            services.AddSingleton<IEmailService, EmailService>();
 
             // configure Identity
             var builder = services.AddIdentity<AppUser, IdentityRole>();

@@ -27,10 +27,10 @@ namespace Identity
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        public IConfiguration _configuration;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -38,18 +38,22 @@ namespace Identity
             services.AddControllers();
 
             services.AddDbContext<DatabaseContext>(options =>
-              options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+              options.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"),
               b => b.MigrationsAssembly("Identity")));
 
             services.AddSingleton<IJwtFactory, JwtFactory>();
             services.AddSingleton<IEmailService, EmailService>();
 
+            var emailConfimrationSettings = _configuration.GetSection("EmailConfirmation").Get<EmailConfirmation>();
             // configure Identity
-            var builder = services.AddIdentity<AppUser, IdentityRole>();
+            var builder = services.AddIdentity<AppUser, IdentityRole>(opt =>
+            {
+                opt.SignIn.RequireConfirmedEmail = emailConfimrationSettings.Enabled;
+            });
             builder.AddEntityFrameworkStores<DatabaseContext>().AddDefaultTokenProviders();
 
             // configure jwt
-            var jwtOptions = Configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
+            var jwtOptions = _configuration.GetSection(nameof(JwtIssuerOptions)).Get<JwtIssuerOptions>();
 
             // Configure JwtIssuerOptions
             services.Configure<JwtIssuerOptions>(options =>

@@ -5,6 +5,7 @@ using Identity.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
@@ -21,12 +22,18 @@ namespace Identity.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IJwtFactory _jwtFactory;
         private readonly JwtIssuerOptions _jwtOptions;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(UserManager<AppUser> userManager, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> jwtOptions)
+        public AuthController(
+            UserManager<AppUser> userManager, 
+            IJwtFactory jwtFactory, 
+            IOptions<JwtIssuerOptions> jwtOptions,
+            IConfiguration configuration)
         {
             _userManager = userManager;
             _jwtFactory = jwtFactory;
             _jwtOptions = jwtOptions.Value;
+            _configuration = configuration;
         }
 
         public JwtIssuerOptions JwtOptions => _jwtOptions;
@@ -44,6 +51,16 @@ namespace Identity.Controllers
             if (identity == null)
             {
                 return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));
+            }
+
+            if (_configuration.GetSection("EmailConfirmation").Get<EmailConfirmation>().Enabled)
+            {
+                var user = await _userManager.FindByNameAsync(credentials.UserName);
+
+                if (!await _userManager.IsEmailConfirmedAsync(user))
+                {
+                    return BadRequest(Errors.AddErrorToModelState("login_failure", "Email not confirmed.", ModelState));
+                }
             }
 
             var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, JwtOptions);

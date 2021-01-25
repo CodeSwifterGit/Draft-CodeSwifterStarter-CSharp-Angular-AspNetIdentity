@@ -3,6 +3,7 @@ using Identity.Helpers;
 using Identity.Models;
 using Identity.Services;
 using Identity.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -54,10 +55,40 @@ namespace Identity.Controllers
             if (emailConfimrationSettings.Enabled)
             {
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                _emailService.SendRegistrationEmailConfiguration(user.Email, user.Id, token);
+                _emailService.SendRegistrationEmail(user.Email, user.Id, token);
             }
 
             return new OkResult();
+        }
+
+        [HttpPost]
+        [Authorize(Policy = "ApiUser")]
+        public async Task<ActionResult> SendForgotPasswordEmail()
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            var emailConfimrationSettings = _configuration.GetSection("EmailConfirmation").Get<EmailConfirmation>();
+            if (emailConfimrationSettings.Enabled)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                _emailService.SendResetPasswordEmail(user.Email, user.Id, token);
+            }
+
+            return new OkResult();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ForgotPassword(ForgotPasswordModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+            return new OkObjectResult(result);
         }
 
         [HttpGet]

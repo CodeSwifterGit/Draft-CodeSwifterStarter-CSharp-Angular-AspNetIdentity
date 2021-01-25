@@ -24,11 +24,22 @@ namespace Identity.Services
             
         }
 
-        public void SendRegistrationEmailConfiguration(string email, string userId, string token)
+        public void SendRegistrationEmail(string email, string userId, string token)
         {
             var message = new MimeMessage();
             message.Subject = "Account Confirmation";
             message.Body = new BodyBuilder { TextBody = $"Please confirm your account by clicking on {_hostUrl}/accounts/confirm?userId={HttpUtility.UrlEncode(userId)}&token={HttpUtility.UrlEncode(token)}" }.ToMessageBody();
+            message.To.Add(new MailboxAddress(email));
+            message.From.Add(new MailboxAddress("no-reply"));
+
+            SendEmail(message);
+        }
+
+        public void SendResetPasswordEmail(string email, string userId, string token)
+        {
+            var message = new MimeMessage();
+            message.Subject = "Reset Password";
+            message.Body = new BodyBuilder { TextBody = $"You have requested to reset your password. Please click following link to do it. {_hostUrl}/accounts/resetpassword?userId={HttpUtility.UrlEncode(userId)}&token={HttpUtility.UrlEncode(token)}" }.ToMessageBody();
             message.To.Add(new MailboxAddress(email));
             message.From.Add(new MailboxAddress("no-reply"));
 

@@ -7,6 +7,7 @@ namespace Identity.Services
 {
     public interface IEmailService
     {
-        void SendRegistrationEmailConfiguration(string email, string userId, string token);
+        void SendRegistrationEmail(string email, string userId, string token);
+        void SendResetPasswordEmail(string email, string userId, string token);
     }
 }

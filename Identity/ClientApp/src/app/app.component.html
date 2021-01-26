@@ -1,0 +1,19 @@
+
+ <mat-toolbar color="primary">
+    <a mat-button routerLink="/">Example App</a>
+    <a mat-button *ngIf="!(isLoggedIn$ | async)" routerLink="/">Register</a>
+    <a mat-button *ngIf="!(isLoggedIn$ | async)" routerLink="/login">Log in</a>
+   <span fxFlex></span>
+   <button mat-icon-button [matMenuTriggerFor]="accountMenu" *ngIf="isLoggedIn$ | async">
+     <mat-icon>person</mat-icon>
+   </button>
+ </mat-toolbar>
+
+ <mat-menu #accountMenu="matMenu">
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>exit_to_app</mat-icon>
+      <span>Logout</span>
+    </button>
+  </mat-menu>
+
+<router-outlet></router-outlet>

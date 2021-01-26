@@ -1,0 +1,5 @@
+<ng-container *ngIf="(isLoggedIn$ | async)">
+    <p>home works!</p>
+</ng-container>
+<app-register *ngIf="!(isLoggedIn$ | async)">
+</app-register>

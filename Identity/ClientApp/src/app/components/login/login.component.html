@@ -1,0 +1,22 @@
+<div class="container">
+    <h2 style="text-align: center;">Log in</h2>
+    <form [formGroup]="form" fxLayout="column" fxLayoutGap="5px" fxLayoutAlign="start stretch" (onsubmit)="login()">
+        <mat-form-field appearance="fill">
+            <mat-label>Email address</mat-label>
+            <input matInput formControlName="email" name="email">
+            <mat-error *ngIf="email?.errors?.required">Email is required</mat-error>
+            <mat-error *ngIf="email?.errors?.email">Not a valid email</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+            <mat-label>Enter password</mat-label>
+            <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" name="password">
+            <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'"
+                [attr.aria-pressed]="hide">
+                <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="password?.errors?.required">Password is required</mat-error>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="login()" [disabled]="form.invalid">Log in</button>
+        <small><a routerLink="/forgot-password">Forgot password?</a></small>
+    </form>
+</div>

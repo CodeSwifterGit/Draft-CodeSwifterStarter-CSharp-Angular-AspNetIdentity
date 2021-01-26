@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace Identity.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class AccountsController : Controller
     {
         private UserManager<AppUser> _userManager;
@@ -36,7 +36,6 @@ namespace Identity.Controllers
             _emailService = emailService;
         }
 
-        // POST: AccountsController/Create
         [HttpPost]
         public async Task<ActionResult> Create(RegistrationViewModel model)
         {
@@ -61,11 +60,10 @@ namespace Identity.Controllers
             return new OkResult();
         }
 
-        [HttpPost]
-        [Authorize(Policy = "ApiUser")]
-        public async Task<ActionResult> SendForgotPasswordEmail()
+        [HttpPost("forgotpassword")]
+        public async Task<ActionResult> ForgotPassword(ForgotPasswordModel model)
         {
-            var user = await _userManager.GetUserAsync(HttpContext.User);
+            var user = await _userManager.FindByEmailAsync(model.Email);
 
             var emailConfimrationSettings = _configuration.GetSection("EmailConfirmation").Get<EmailConfirmation>();
             if (emailConfimrationSettings.Enabled)
@@ -77,8 +75,8 @@ namespace Identity.Controllers
             return new OkResult();
         }
 
-        [HttpPost]
-        public async Task<ActionResult> ForgotPassword(ForgotPasswordModel model)
+        [HttpPost("resetpassword")]
+        public async Task<ActionResult> ResetPassword(ResetPasswordModel model)
         {
             if (!ModelState.IsValid)
             {
